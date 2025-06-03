@@ -19,7 +19,6 @@ class LocationManager: NSObject, CLLocationManagerDelegate, ObservableObject {
 
 
 
-WebView.swift
 import SwiftUI
 import WebKit
 
@@ -45,24 +44,14 @@ struct WebView: UIViewRepresentable {
     }
 
     class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
-        // Allow all navigation
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
                      decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             decisionHandler(.allow)
         }
 
-        // Required for alert dialogs, etc.
         func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
                      initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
             completionHandler()
-        }
-
-        // Allow camera/mic/geolocation permissions
-        func webView(_ webView: WKWebView, requestMediaCapturePermissionFor origin: WKSecurityOrigin,
-                     initiatedByFrame frame: WKFrameInfo,
-                     type: WKMediaCaptureType,
-                     decisionHandler: @escaping (WKPermissionDecision) -> Void) {
-            decisionHandler(.grant)
         }
     }
 }
