@@ -2,29 +2,6 @@ import SwiftUI
 import WebKit
 import CoreLocation
 
-// MARK: - WebView Wrapper
-struct WebView: UIViewRepresentable {
-    let url: URL
-    @ObservedObject var locationManager: LocationManager
-
-    func makeUIView(context: Context) -> WKWebView {
-        let webView = WKWebView()
-
-        // Enable location access
-        webView.configuration.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
-        webView.configuration.websiteDataStore = .default()
-
-        // Load the URL
-        let request = URLRequest(url: url)
-        webView.load(request)
-        return webView
-    }
-
-    func updateUIView(_ uiView: WKWebView, context: Context) {
-        // Optionally, you can use locationManager.location here
-    }
-}
-
 // MARK: - Location Manager
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
@@ -40,19 +17,43 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         location = locations.first
     }
+
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Location error: \(error.localizedDescription)")
+    }
 }
 
-// MARK: - Main View
+// MARK: - WebView
+struct WebView: UIViewRepresentable {
+    let url: URL
+
+    func makeUIView(context: Context) -> WKWebView {
+        let webView = WKWebView()
+        let request = URLRequest(url: url)
+        webView.load(request)
+        return webView
+    }
+
+    func updateUIView(_ uiView: WKWebView, context: Context) {}
+}
+
+// MARK: - ContentView
 struct ContentView: View {
     @StateObject var locationManager = LocationManager()
 
     var body: some View {
-        WebView(url: URL(string: "https://parkingfinder.tech")!, locationManager: locationManager)
+        WebView(url: URL(string: "https://parkingfinder.tech")!)
             .edgesIgnoringSafeArea(.all)
+            .onAppear {
+                // Use location if needed here
+                if let location = locationManager.location {
+                    print("User location: \(location.coordinate.latitude), \(location.coordinate.longitude)")
+                }
+            }
     }
 }
 
-// MARK: - App Entry Point
+// MARK: - App Entry
 @main
 struct ParkingFinderApp: App {
     var body: some Scene {
