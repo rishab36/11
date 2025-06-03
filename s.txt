@@ -1,158 +1,63 @@
 import SwiftUI
 import WebKit
+import CoreLocation
 
+// MARK: - WebView Wrapper
 struct WebView: UIViewRepresentable {
     let url: URL
+    @ObservedObject var locationManager: LocationManager
 
     func makeUIView(context: Context) -> WKWebView {
-        let config = WKWebViewConfiguration()
-        config.preferences.javaScriptEnabled = true
-        config.defaultWebpagePreferences.allowsContentJavaScript = true
-        config.websiteDataStore = WKWebsiteDataStore.default()
-        config.allowsInlineMediaPlayback = true
+        let webView = WKWebView()
 
-        let webView = WKWebView(frame: .zero, configuration: config)
-        webView.navigationDelegate = context.coordinator
-        webView.uiDelegate = context.coordinator
+        // Enable location access
+        webView.configuration.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
+        webView.configuration.websiteDataStore = .default()
 
-        webView.load(URLRequest(url: url))
+        // Load the URL
+        let request = URLRequest(url: url)
+        webView.load(request)
         return webView
     }
 
-    func updateUIView(_ uiView: WKWebView, context: Context) {}
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
-
-    class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
-
-        // Allow all navigation
-        func webView(_ webView: WKWebView,
-                     decidePolicyFor navigationAction: WKNavigationAction,
-                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            decisionHandler(.allow)
-        }
-
-        func webView(_ webView: WKWebView,
-                     decidePolicyFor navigationResponse: WKNavigationResponse,
-                     decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-            decisionHandler(.allow)
-        }
-
-        // Allow JS alert dialogs
-        func webView(_ webView: WKWebView,
-                     runJavaScriptAlertPanelWithMessage message: String,
-                     initiatedByFrame frame: WKFrameInfo,
-                     completionHandler: @escaping () -> Void) {
-            completionHandler()
-        }
-
-        // ✅ Allow access to geolocation
-        func webView(_ webView: WKWebView,
-                     requestGeolocationPermissionFor origin: WKSecurityOrigin,
-                     initiatedByFrame frame: WKFrameInfo,
-                     decisionHandler: @escaping (Bool) -> Void) {
-            decisionHandler(true)
-        }
-
-        // Optional: Allow camera/mic
-        func webView(_ webView: WKWebView,
-                     requestMediaCapturePermissionFor origin: WKSecurityOrigin,
-                     initiatedByFrame frame: WKFrameInfo,
-                     type: WKMediaCaptureType,
-                     decisionHandler: @escaping (WKPermissionDecision) -> Void) {
-            decisionHandler(.grant)
-        }
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        // Optionally, you can use locationManager.location here
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-info.plist
-<key>NSLocationWhenInUseUsageDescription</key>
-<string>We need your location to show nearby parking spots.</string>
-
-
-LocationManager.swift
-import Foundation
-import CoreLocation
-
-class LocationManager: NSObject, CLLocationManagerDelegate, ObservableObject {
-    private let locationManager = CLLocationManager()
+// MARK: - Location Manager
+class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    private let manager = CLLocationManager()
+    @Published var location: CLLocation?
 
     override init() {
         super.init()
-        locationManager.delegate = self
-        locationManager.requestWhenInUseAuthorization()
+        manager.delegate = self
+        manager.requestWhenInUseAuthorization()
+        manager.startUpdatingLocation()
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        location = locations.first
     }
 }
 
-
-
-import SwiftUI
-import WebKit
-
-struct WebView: UIViewRepresentable {
-    let url: URL
-
-    func makeUIView(context: Context) -> WKWebView {
-        let config = WKWebViewConfiguration()
-        config.preferences.javaScriptEnabled = true
-        config.websiteDataStore = WKWebsiteDataStore.default()
-
-        let webView = WKWebView(frame: .zero, configuration: config)
-        webView.navigationDelegate = context.coordinator
-        webView.uiDelegate = context.coordinator
-        webView.load(URLRequest(url: url))
-        return webView
-    }
-
-    func updateUIView(_ uiView: WKWebView, context: Context) {}
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
-
-    class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
-        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
-                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            decisionHandler(.allow)
-        }
-
-        func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
-                     initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
-            completionHandler()
-        }
-    }
-}
-
-
-
-
-contentview.swift
-import SwiftUI
-
+// MARK: - Main View
 struct ContentView: View {
-    @StateObject private var locationManager = LocationManager()
+    @StateObject var locationManager = LocationManager()
 
     var body: some View {
-        WebView(url: URL(string: "https://parkingfinder.tech")!)
+        WebView(url: URL(string: "https://parkingfinder.tech")!, locationManager: locationManager)
             .edgesIgnoringSafeArea(.all)
     }
 }
 
-#Preview {
-    ContentView()
+// MARK: - App Entry Point
+@main
+struct ParkingFinderApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
 }
