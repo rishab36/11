@@ -1,0 +1,87 @@
+info.plist
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>We need your location to show nearby parking spots.</string>
+
+
+LocationManager.swift
+import Foundation
+import CoreLocation
+
+class LocationManager: NSObject, CLLocationManagerDelegate, ObservableObject {
+    private let locationManager = CLLocationManager()
+
+    override init() {
+        super.init()
+        locationManager.delegate = self
+        locationManager.requestWhenInUseAuthorization()
+    }
+}
+
+
+
+WebView.swift
+import SwiftUI
+import WebKit
+
+struct WebView: UIViewRepresentable {
+    let url: URL
+
+    func makeUIView(context: Context) -> WKWebView {
+        let config = WKWebViewConfiguration()
+        config.preferences.javaScriptEnabled = true
+        config.websiteDataStore = WKWebsiteDataStore.default()
+
+        let webView = WKWebView(frame: .zero, configuration: config)
+        webView.navigationDelegate = context.coordinator
+        webView.uiDelegate = context.coordinator
+        webView.load(URLRequest(url: url))
+        return webView
+    }
+
+    func updateUIView(_ uiView: WKWebView, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
+        // Allow all navigation
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
+                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            decisionHandler(.allow)
+        }
+
+        // Required for alert dialogs, etc.
+        func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
+                     initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+            completionHandler()
+        }
+
+        // Allow camera/mic/geolocation permissions
+        func webView(_ webView: WKWebView, requestMediaCapturePermissionFor origin: WKSecurityOrigin,
+                     initiatedByFrame frame: WKFrameInfo,
+                     type: WKMediaCaptureType,
+                     decisionHandler: @escaping (WKPermissionDecision) -> Void) {
+            decisionHandler(.grant)
+        }
+    }
+}
+
+
+
+
+contentview.swift
+import SwiftUI
+
+struct ContentView: View {
+    @StateObject private var locationManager = LocationManager()
+
+    var body: some View {
+        WebView(url: URL(string: "https://parkingfinder.tech")!)
+            .edgesIgnoringSafeArea(.all)
+    }
+}
+
+#Preview {
+    ContentView()
+}
