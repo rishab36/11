@@ -1,183 +1,27 @@
-== DATE:
+import Foundation
+import CoreLocation
 
-    Wednesday, June 4, 2025 at 1:10:15 AM Singapore Standard Time
+class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    private let manager = CLLocationManager()
     
-    2025-06-03T17:10:15Z
-
-
-
-== PREVIEW UPDATE ERROR:
-
-    SchemeBuildError: Failed to build the scheme “ParkingFinder”
-    
-    Multiple commands produce '/Users/user279589/Library/Developer/Xcode/DerivedData/ParkingFinder-flzfvyhgerqnpghkvtzhasdtjfdz/Build/Products/Debug-iphonesimulator/ParkingFinder.app/Info.plist'
-    
-    Prepare build:
-    error: Multiple commands produce '/Users/user279589/Library/Developer/Xcode/DerivedData/ParkingFinder-flzfvyhgerqnpghkvtzhasdtjfdz/Build/Products/Debug-iphonesimulator/ParkingFinder.app/Info.plist'
-        note: Target 'ParkingFinder' (project 'ParkingFinder') has copy command from '/Users/user279589/Desktop/ParkingFinder/ParkingFinder/Info.plist' to '/Users/user279589/Library/Developer/Xcode/DerivedData/ParkingFinder-flzfvyhgerqnpghkvtzhasdtjfdz/Build/Products/Debug-iphonesimulator/ParkingFinder.app/Info.plist'
-        note: Target 'ParkingFinder' (project 'ParkingFinder') has process command with output '/Users/user279589/Library/Developer/Xcode/DerivedData/ParkingFinder-flzfvyhgerqnpghkvtzhasdtjfdz/Build/Products/Debug-iphonesimulator/ParkingFinder.app/Info.plist'
-    
-
-
-
-== PREVIEW UPDATE ERROR:
-
-    SchemeBuildError: Failed to build the scheme “ParkingFinder”
-    
-    Multiple commands produce '/Users/user279589/Library/Developer/Xcode/DerivedData/ParkingFinder-flzfvyhgerqnpghkvtzhasdtjfdz/Build/Products/Debug-iphonesimulator/ParkingFinder.app/Info.plist'
-    
-    Prepare build:
-    error: Multiple commands produce '/Users/user279589/Library/Developer/Xcode/DerivedData/ParkingFinder-flzfvyhgerqnpghkvtzhasdtjfdz/Build/Products/Debug-iphonesimulator/ParkingFinder.app/Info.plist'
-        note: Target 'ParkingFinder' (project 'ParkingFinder') has copy command from '/Users/user279589/Desktop/ParkingFinder/ParkingFinder/Info.plist' to '/Users/user279589/Library/Developer/Xcode/DerivedData/ParkingFinder-flzfvyhgerqnpghkvtzhasdtjfdz/Build/Products/Debug-iphonesimulator/ParkingFinder.app/Info.plist'
-        note: Target 'ParkingFinder' (project 'ParkingFinder') has process command with output '/Users/user279589/Library/Developer/Xcode/DerivedData/ParkingFinder-flzfvyhgerqnpghkvtzhasdtjfdz/Build/Products/Debug-iphonesimulator/ParkingFinder.app/Info.plist'
-    
-
-
-
-== VERSION INFO:
-
-    Tools: 16C5032a
-    OS:    23H626
-    PID:   46198
-    Model: Mac mini
-    Arch:  arm64e
-
-
-
-== ENVIRONMENT:
-
-    openFiles = [
-        /Users/user279589/Desktop/ParkingFinder/ParkingFinder/ContentView.swift
-    ]
-    wantsNewBuildSystem = true
-    newBuildSystemAvailable = true
-    activeScheme = ParkingFinder
-    activeRunDestination = iPhone 16 Pro variant iphonesimulator arm64
-    workspaceArena = [x]
-    buildArena = [x]
-    buildableEntries = [
-        ParkingFinder.app
-    ]
-    runMode = JIT Executor
-
-
-
-== SELECTED RUN DESTINATION:
-
-    Simulator - iOS 18.2 | iphonesimulator | arm64 | iPhone 16 Pro | no proxy
-
-
-
-== EXECUTION MODE OVERRIDES:
-
-    Workspace JIT mode user setting: true
-    Falling back to Dynamic Replacement: false
-
-
-
-== PACKAGE RESOLUTION ERRORS:
-
-    
-
-
-
-== REFERENCED SOURCE PACKAGES:
-
-    
-
-
-
-== JIT LINKAGE:
-
-    
-
-
-
-== SESSION GROUP 6615:
-
-    workspace identifier: WorkspaceIdentifier(identifier: CA160BDC-FA7A-4BCE-BFA9-C248E5F7179D)
-    providers: [
-        Preview Provider | Registry-ContentView.swift#1[preview] [Editor(6509)]
-    ]
-    translation units: [
-        /Users/user279589/Desktop/ParkingFinder/ParkingFinder/ContentView.swift
-    ]
-    attributes: [
-        Editor(6509):     []
-    ]
-    session: 6619
-    request sessions: [
-        Registry[Registry-ContentView.swift#1[preview] (line 19)]: not completed
-    ]
-
-
-
-== UPDATE SESSION 6619:
-
-    Start Date: Wednesday, June 4, 2025 at 1:09:53 AM Singapore Standard Time
-    Timing {
-        Elapsed Time: 4.884113907814026s
-        9a4d3aa3bc5cf0d,770663393.316143,4.884113907814026s,,PreviewUpdateSession,id:6619
-        58818158d0e2966f,770663393.470067,0.00022101402282714844s,,MakeBuildGraph,
-        3afe437d7521a636,770663397.50689,0.6929659843444824s,,WorkspaceBuild,
+    override init() {
+        super.init()
+        manager.delegate = self
+        manager.requestWhenInUseAuthorization() // 🔴 This triggers the permission alert
+        manager.startUpdatingLocation()
     }
-    Preview Preflight {
-        UpdaterStore {
-            updaterLimit: single
-            expectedAbandonedIdentifiers: [6387, 6016, 5631, 5696, 6344, 5972, 6243, 6197]
-        }
-        Simulator {
-            platform: iphonesimulator
-            device: 027F3510-2BBA-422B-ABB2-30E049393DBF iPhone 16 Pro
-            buildNumber: 22D8075
-            runtimePath: /Library/Developer/CoreSimulator/Volumes/iOS_22D8075/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 18.3.simruntime
-        }
-    }
-    Preview Provider {
-        UpdaterStore {
-            updaterLimit: single
-            expectedAbandonedIdentifiers: [6387, 6016, 5631, 5696, 6344, 5972, 6243, 6197]
-        }
-        Simulator {
-            platform: iphonesimulator
-            device: 027F3510-2BBA-422B-ABB2-30E049393DBF iPhone 16 Pro
-            buildNumber: 22D8075
-            runtimePath: /Library/Developer/CoreSimulator/Volumes/iOS_22D8075/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 18.3.simruntime
-        }
-    }
-    Build Graph {
-        ParkingFinder.app (#3)
-           sourceFile(file:///Users/user279589/Desktop/ParkingFinder/ParkingFinder/ContentView.swift -> ContentView.swift) (#1)
-           ContentView.swift (#2)
-    }
-    Update Plan {
-        iOS [arm64 iphonesimulator18.2 iphonesimulator] (iPhone 16 Pro, 36EEDDA2-6113-4902-8659-6D91C927479A-iphonesimulator18.2-arm64-iphonesimulator), [], thinning disabled, thunking enabled) {
-            Destination: iPhone 16 Pro 36EEDDA2-6113-4902-8659-6D91C927479A | default device for iphonesimulator [
-                ParkingFinder app - Previews {
-                    execution point packs [
-                        [source: ContentView.swift, role: Previews] (in ParkingFinder)
-                    ]
-                    translation units [
-                        ContentView.swift (in ParkingFinder.app)
-                    ]
-                    modules [
-                        ParkingFinder.app
-                    ]
-                    jit link description [
-                        ParkingFinder.app
-                    ]
-                }
-            ]
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        // You can log or use the location here
+        if let location = locations.first {
+            print("User location: \(location.coordinate.latitude), \(location.coordinate.longitude)")
         }
     }
 
-
-
-== POWER STATE LOGS:
-
-    6/4/2025, 12:14 AM Received power source state: Externally Powered
-    6/4/2025, 12:14 AM No device power state user override user default value.Current power state: Full Power
-
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Failed to get location: \(error.localizedDescription)")
+    }
+}
 
 
 
