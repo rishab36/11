@@ -1,31 +1,31 @@
-const config: CapacitorConfig = {
-  appId: 'com.rishab.parkingfinder',
-  appName: 'Parking Finder',
-  webDir: 'dist', // or 'build' if using CRA
-  bundledWebRuntime: false,
-  plugins: {
-    SplashScreen: {
-      launchShowDuration: 2000,
-      backgroundColor: '#3B82F6',
-      showSpinner: true,
-      spinnerColor: '#ffffff',
-      androidSpinnerStyle: 'large',
-    },
-    Geolocation: {
-      androidGPSPermission: true,
-    },
-    LocalNotifications: {
-      smallIcon: 'ic_stat_parking',
-      iconColor: '#3B82F6',
-      sound: 'beep.wav',
+import SwiftUI
+import WebKit
+
+struct ContentView: View {
+    var body: some View {
+        WebView(url: URL(string: "https://yourwebsite.com")!)
+            .edgesIgnoringSafeArea(.all)
     }
-  },
-  android: {
-    allowMixedContent: true,
-  },
-  ios: {
-    contentInset: 'always',
-    limitsNavigationsToAppBoundDomains: true,
-    scheme: 'parkfinder',
-  }
-};
+}
+
+struct WebView: UIViewRepresentable {
+    let url: URL
+
+    func makeUIView(context: Context) -> WKWebView {
+        return WKWebView()
+    }
+
+    func updateUIView(_ webView: WKWebView, context: Context) {
+        let request = URLRequest(url: url)
+        webView.load(request)
+    }
+}
+
+@main
+struct WebAppApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+}
