@@ -1,23 +1,106 @@
 import SwiftUI
 import WebKit
 
+class WebViewState: ObservableObject {
+    @Published var canGoBack = false
+    @Published var canGoForward = false
+    @Published var goBack = false
+    @Published var goForward = false
+}
+
 struct ContentView: View {
+    @StateObject private var state = WebViewState()
+
     var body: some View {
-        WebView(url: URL(string: "https://yourwebsite.com")!)
-            .edgesIgnoringSafeArea(.all)
+        VStack(spacing: 0) {
+            WebView(url: URL(string: "https://yourwebsite.com")!, state: state)
+                .edgesIgnoringSafeArea(.all)
+
+            HStack {
+                Button(action: { state.goBack = true }) {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(state.canGoBack ? .blue : .gray)
+                }
+                .disabled(!state.canGoBack)
+                .padding()
+
+                Button(action: { state.goForward = true }) {
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(state.canGoForward ? .blue : .gray)
+                }
+                .disabled(!state.canGoForward)
+                .padding()
+            }
+            .background(Color(UIColor.systemGray6))
+        }
     }
 }
 
 struct WebView: UIViewRepresentable {
     let url: URL
+    @ObservedObject var state: WebViewState
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self, state: state)
+    }
 
     func makeUIView(context: Context) -> WKWebView {
-        return WKWebView()
+        let webView = WKWebView()
+        webView.navigationDelegate = context.coordinator
+
+        // Add pull-to-refresh
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(context.coordinator, action: #selector(Coordinator.didPullToRefresh), for: .valueChanged)
+        webView.scrollView.refreshControl = refreshControl
+
+        // Observe back/forward availability
+        webView.addObserver(context.coordinator, forKeyPath: "canGoBack", options: .new, context: nil)
+        webView.addObserver(context.coordinator, forKeyPath: "canGoForward", options: .new, context: nil)
+
+        webView.load(URLRequest(url: url))
+        return webView
     }
 
     func updateUIView(_ webView: WKWebView, context: Context) {
-        let request = URLRequest(url: url)
-        webView.load(request)
+        if state.goBack {
+            webView.goBack()
+            state.goBack = false
+        }
+        if state.goForward {
+            webView.goForward()
+            state.goForward = false
+        }
+    }
+
+    class Coordinator: NSObject, WKNavigationDelegate {
+        var parent: WebView
+        var state: WebViewState
+
+        init(_ parent: WebView, state: WebViewState) {
+            self.parent = parent
+            self.state = state
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            webView.scrollView.refreshControl?.endRefreshing()
+        }
+
+        @objc func didPullToRefresh() {
+            parent.url = parent.url // triggers reload via updateUIView
+        }
+
+        override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+            guard let webView = object as? WKWebView else { return }
+            if keyPath == "canGoBack" {
+                DispatchQueue.main.async {
+                    self.state.canGoBack = webView.canGoBack
+                }
+            } else if keyPath == "canGoForward" {
+                DispatchQueue.main.async {
+                    self.state.canGoForward = webView.canGoForward
+                }
+            }
+        }
     }
 }
 
