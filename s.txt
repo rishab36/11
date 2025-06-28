@@ -1,6 +1,7 @@
 import SwiftUI
 import WebKit
 
+// Shared state for navigation buttons
 class WebViewState: ObservableObject {
     @Published var canGoBack = false
     @Published var canGoForward = false
@@ -13,7 +14,7 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            WebView(url: URL(string: "https://yourwebsite.com")!, state: state)
+            WebView(url: URL(string: "https://omnia-ai.netlify.app")!, state: state)
                 .edgesIgnoringSafeArea(.all)
 
             HStack {
@@ -37,7 +38,7 @@ struct ContentView: View {
 }
 
 struct WebView: UIViewRepresentable {
-    let url: URL
+    var url: URL
     @ObservedObject var state: WebViewState
 
     func makeCoordinator() -> Coordinator {
@@ -46,14 +47,13 @@ struct WebView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
+        context.coordinator.webView = webView
         webView.navigationDelegate = context.coordinator
 
-        // Add pull-to-refresh
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(context.coordinator, action: #selector(Coordinator.didPullToRefresh), for: .valueChanged)
         webView.scrollView.refreshControl = refreshControl
 
-        // Observe back/forward availability
         webView.addObserver(context.coordinator, forKeyPath: "canGoBack", options: .new, context: nil)
         webView.addObserver(context.coordinator, forKeyPath: "canGoForward", options: .new, context: nil)
 
@@ -75,18 +75,15 @@ struct WebView: UIViewRepresentable {
     class Coordinator: NSObject, WKNavigationDelegate {
         var parent: WebView
         var state: WebViewState
+        weak var webView: WKWebView?
 
         init(_ parent: WebView, state: WebViewState) {
             self.parent = parent
             self.state = state
         }
 
-        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            webView.scrollView.refreshControl?.endRefreshing()
-        }
-
         @objc func didPullToRefresh() {
-            parent.url = parent.url // triggers reload via updateUIView
+            webView?.reload()
         }
 
         override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
@@ -100,6 +97,10 @@ struct WebView: UIViewRepresentable {
                     self.state.canGoForward = webView.canGoForward
                 }
             }
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            webView.scrollView.refreshControl?.endRefreshing()
         }
     }
 }
